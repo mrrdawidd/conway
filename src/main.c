@@ -92,19 +92,46 @@ void draw()
 int main()
 {
     InitWindow(1000, 1000, "Test");
-    SetTargetFPS(60);
-    init();
+    SetTargetFPS(30);
+    //init();
     Camera2D camera = {0};
     camera.target = (Vector2){500.0f, 500.0f};
     camera.offset = (Vector2){500.0f, 500.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
+    int resume = 0;
+
     while(!WindowShouldClose())
     {
-        update();
-        if(IsKeyPressed(KEY_E) && camera.zoom < 5.0f) camera.zoom += 1.0f;
-        if(IsKeyPressed(KEY_Q) && camera.zoom > 1.0f) camera.zoom -= 1.0f;
+        Vector2 mousepos = GetMousePosition();
+        Vector2 gpos = GetScreenToWorld2D(mousepos, camera);
+
+        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        {
+            if(gpos.x > 0 && gpos.x < GWIDTH - 1 && gpos.y > 0 && gpos.y < GHEIGHT - 1)
+            {
+                current[(int)gpos.x][(int)gpos.y] = 1;
+            }
+        }
+        if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
+        {
+            if(gpos.x > 0 && gpos.x < GWIDTH - 1 && gpos.y > 0 && gpos.y < GHEIGHT - 1)
+            {
+                current[(int)gpos.x][(int)gpos.y] = 0;
+            }
+        }
+        if(IsKeyPressed(KEY_SPACE))
+        {
+            if(resume == 0){resume = 1;}
+            else resume = 0;
+        }
+        if(resume == 1)
+        {
+            update();
+        }
+        if(IsKeyPressed(KEY_E) && camera.zoom < 10.0f) camera.zoom *= 2.0f;
+        if(IsKeyPressed(KEY_Q) && camera.zoom > 1.0f) camera.zoom /= 2.0f;
         if(IsKeyDown(KEY_A)) camera.target.x -= 5.0f;
         if(IsKeyDown(KEY_D)) camera.target.x += 5.0f;
         if(IsKeyDown(KEY_W)) camera.target.y -= 5.0f;
