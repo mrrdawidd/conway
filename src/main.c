@@ -7,6 +7,7 @@
 
 uint8_t current[GS][GS];
 uint8_t next[GS][GS];
+uint8_t paused = 1;
 
 Camera2D camera = {0};
 RenderTexture2D canvas;
@@ -18,7 +19,7 @@ void init()
         for(int j = 0; j < GS; j++)
         {
             int rsg = GetRandomValue(1, 10);
-            if(rsg >= 4) current[i][j] = 1;
+            if(rsg >= 9) current[i][j] = 1;
             else current[i][j] = 0;
         }
     }
@@ -45,7 +46,7 @@ int neighb(int x, int y)
     return count;
 }
 
-void update()
+void update()   // modify these rules to get some really fun results
 {
     for(int i = 0; i < GS; i++)
     {
@@ -55,7 +56,7 @@ void update()
 
             if(current[i][j] == 1)
             {
-                if(count < 2 || count > 3)
+                if(count < 2 || count > 3)  // dying rules
                 {
                     next[i][j] = 0;
                 }
@@ -66,7 +67,7 @@ void update()
             }
             else
             {
-                if(count == 3)
+                if(count == 3)  // birth rules
                 {
                     next[i][j] = 1;
                 }
@@ -109,6 +110,13 @@ void movement()
         camera.zoom += 0.5f * scroll * camera.zoom;
     }
     camera.zoom = clamp(camera.zoom, 1.0f, 10.0f);
+
+    if(IsKeyPressed(KEY_SPACE))
+    {
+        if(paused == 1) paused = 0;
+        else paused = 1;
+    }
+    if(IsKeyPressed(KEY_R)) init();
 }
 
 int main()
@@ -127,9 +135,9 @@ int main()
 
     while(!WindowShouldClose())
     {
-        update();
-        draw();
         movement();
+        if(paused == 0) update();
+        draw();
         BeginDrawing();
         ClearBackground(BLACK);
         BeginMode2D(camera);
