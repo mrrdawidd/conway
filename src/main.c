@@ -1,17 +1,25 @@
 #include "raylib.h"
-#define GWIDTH 1000
-#define GHEIGHT 1000
+#include <string.h>
+#include <stdint.h>
 
-int current[GWIDTH][GHEIGHT];
-int next[GWIDTH][GHEIGHT];
+#define GS 1000 // GAME SIZE
+#define clamp(x, min, max) ((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))
+
+uint8_t current[GS][GS];
+uint8_t next[GS][GS];
+
+Camera2D camera = {0};
+RenderTexture2D canvas;
 
 void init()
 {
-    for(int i = 1; i < GWIDTH-1; i++)
+    for(int i = 0; i < GS; i++)
     {
-        for(int j = 1; j < GHEIGHT-1; j++)
+        for(int j = 0; j < GS; j++)
         {
-            current[i][j] = GetRandomValue(0, 1);
+            int rsg = GetRandomValue(1, 10);
+            if(rsg >= 4) current[i][j] = 1;
+            else current[i][j] = 0;
         }
     }
 }
@@ -19,19 +27,19 @@ void init()
 int neighb(int x, int y)
 {
     int count = 0;
-    for(int i = -1; i<=1; i++)
+    for(int i = -1; i <= 1; i++)
     {
-        for(int j = -1; j<=1; j++)
+        for(int j = -1; j <= 1; j++)
         {
             if(i == 0 && j == 0) continue;
 
-            int nx = i + x;
-            int ny = j + y;
+            int nx = (x + i + GS) % GS;
+            int ny = (y + j + GS) % GS;
+
             if(current[nx][ny] == 1)
             {
                 count ++;
             }
-
         }
     }
     return count;
@@ -39,12 +47,12 @@ int neighb(int x, int y)
 
 void update()
 {
-    
-    for(int i = 1; i < GWIDTH-1; i++)
+    for(int i = 0; i < GS; i++)
     {
-        for(int j = 1; j < GHEIGHT-1; j++)
+        for(int j = 0; j < GS; j++)
         {
             int count = neighb(i,j);
+
             if(current[i][j] == 1)
             {
                 if(count < 2 || count > 3)
@@ -56,7 +64,8 @@ void update()
                     next[i][j] = 1;
                 }
             }
-            else{
+            else
+            {
                 if(count == 3)
                 {
                     next[i][j] = 1;
@@ -65,21 +74,16 @@ void update()
             }
         }
     }
-
-    for(int i = 0; i < GWIDTH; i++) 
-    {
-        for(int j = 0; j < GHEIGHT; j++) 
-        {
-            current[i][j] = next[i][j];
-        }
-    }
+    memcpy(current, next, sizeof(current));
 }
 
 void draw()
 {
-    for(int i = 0; i < GWIDTH; i++)
+    BeginTextureMode(canvas);
+    ClearBackground(BLACK);
+    for(int i = 0; i < GS; i++)
     {
-        for(int j = 0; j < GHEIGHT; j++)
+        for(int j = 0; j < GS; j++)
         {
             if(current[i][j] == 1)
             {
@@ -87,61 +91,54 @@ void draw()
             }
         }
     }
+    EndTextureMode();
+}
+
+void movement()
+{
+    Vector2 mouseDelta = GetMouseDelta();
+    if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) 
+    {
+        camera.target.x -= mouseDelta.x / camera.zoom;
+        camera.target.y -= mouseDelta.y / camera.zoom;
+    }
+    float scroll = GetMouseWheelMove();
+    scroll = clamp(scroll, -10.0f, 10.0f);
+    if(scroll != 0)
+    {
+        camera.zoom += 0.5f * scroll * camera.zoom;
+    }
+    camera.zoom = clamp(camera.zoom, 1.0f, 10.0f);
 }
 
 int main()
 {
-    InitWindow(1000, 1000, "Test");
-    SetTargetFPS(30);
-    //init();
-    Camera2D camera = {0};
-    camera.target = (Vector2){500.0f, 500.0f};
-    camera.offset = (Vector2){500.0f, 500.0f};
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
+    InitWindow(1280, 720, "Life");
+
+    camera.target = (Vector2){GetScreenWidth()/2, GetScreenHeight()/2};
+    camera.offset = (Vector2){GetScreenWidth()/2, GetScreenHeight()/2};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
-    int resume = 0;
+    canvas = LoadRenderTexture(GS, GS);
+
+    init();
 
     while(!WindowShouldClose())
     {
-        Vector2 mousepos = GetMousePosition();
-        Vector2 gpos = GetScreenToWorld2D(mousepos, camera);
-
-        if(IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-        {
-            if(gpos.x > 0 && gpos.x < GWIDTH - 1 && gpos.y > 0 && gpos.y < GHEIGHT - 1)
-            {
-                current[(int)gpos.x][(int)gpos.y] = 1;
-            }
-        }
-        if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-        {
-            if(gpos.x > 0 && gpos.x < GWIDTH - 1 && gpos.y > 0 && gpos.y < GHEIGHT - 1)
-            {
-                current[(int)gpos.x][(int)gpos.y] = 0;
-            }
-        }
-        if(IsKeyPressed(KEY_SPACE))
-        {
-            if(resume == 0){resume = 1;}
-            else resume = 0;
-        }
-        if(resume == 1)
-        {
-            update();
-        }
-        if(IsKeyPressed(KEY_E) && camera.zoom < 10.0f) camera.zoom *= 2.0f;
-        if(IsKeyPressed(KEY_Q) && camera.zoom > 1.0f) camera.zoom /= 2.0f;
-        if(IsKeyDown(KEY_A)) camera.target.x -= 5.0f;
-        if(IsKeyDown(KEY_D)) camera.target.x += 5.0f;
-        if(IsKeyDown(KEY_W)) camera.target.y -= 5.0f;
-        if(IsKeyDown(KEY_S)) camera.target.y += 5.0f;
+        update();
+        draw();
+        movement();
         BeginDrawing();
         ClearBackground(BLACK);
         BeginMode2D(camera);
-        draw();
+        DrawTexture(canvas.texture, 0, 0, WHITE);
         EndMode2D();
+        DrawFPS(0, 0);
         EndDrawing();
     }
+
+    UnloadRenderTexture(canvas);
     CloseWindow();
 }
