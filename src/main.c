@@ -104,7 +104,7 @@ void controls()
         camera.zoom += 0.5f * scroll * camera.zoom;
     }
 
-    camera.zoom = clamp(camera.zoom, 1.0f, 10.0f);
+    camera.zoom = clamp(camera.zoom, 1.0f, 20.0f);
 
     if(IsKeyPressed(KEY_SPACE))
     {
