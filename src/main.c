@@ -53,7 +53,7 @@ int neighb(int x, int y)
     return count;
 }
 
-void update()   // modify these rules to get some really fun results
+void update()
 {
     for(int i = 0; i < GS; i++)
     {
@@ -63,7 +63,7 @@ void update()   // modify these rules to get some really fun results
 
             if(current[i][j] == 1)
             {
-                if(survive_rules[count] == 1)  // dying rules
+                if(survive_rules[count] == 1)
                 {
                     next[i][j] = 1;
                 }
@@ -74,7 +74,7 @@ void update()   // modify these rules to get some really fun results
             }
             else
             {
-                if(birth_rules[count] == 1)  // birth rules
+                if(birth_rules[count] == 1)
                 {
                     next[i][j] = 1;
                 }
@@ -130,18 +130,18 @@ void movement()
     if(IsKeyPressed(KEY_Z) && updatewhen > 1) updatewhen /= 3;
 
     int shift = IsKeyDown(KEY_LEFT_SHIFT);
+
     if(paused == 1)
     {
-    if(IsKeyPressed(KEY_ZERO)){if(shift) birth_rules[0] = !birth_rules[0]; else survive_rules[0] = !survive_rules[0];}
-    if(IsKeyPressed(KEY_ONE)){if(shift) birth_rules[1] = !birth_rules[1]; else survive_rules[1] = !survive_rules[1];}
-    if(IsKeyPressed(KEY_TWO)){if(shift) birth_rules[2] = !birth_rules[2]; else survive_rules[2] = !survive_rules[2];}
-    if(IsKeyPressed(KEY_THREE)){if(shift) birth_rules[3] = !birth_rules[3]; else survive_rules[3] = !survive_rules[3];}
-    if(IsKeyPressed(KEY_FOUR)){if(shift) birth_rules[4] = !birth_rules[4]; else survive_rules[4] = !survive_rules[4];}
-    if(IsKeyPressed(KEY_FIVE)){if(shift) birth_rules[5] = !birth_rules[5]; else survive_rules[5] = !survive_rules[5];}
-    if(IsKeyPressed(KEY_SIX)){if(shift) birth_rules[6] = !birth_rules[6]; else survive_rules[6] = !survive_rules[6];}
-    if(IsKeyPressed(KEY_SEVEN)){if(shift) birth_rules[7] = !birth_rules[7]; else survive_rules[7] = !survive_rules[7];}
-    if(IsKeyPressed(KEY_EIGHT)){if(shift) birth_rules[8] = !birth_rules[8]; else survive_rules[8] = !survive_rules[8];}
-    }
+    if(IsKeyPressed(KEY_ZERO)){if(shift) survive_rules[0] = !survive_rules[0]; else birth_rules[0] = !birth_rules[0];}
+    if(IsKeyPressed(KEY_ONE)){if(shift) survive_rules[1] = !survive_rules[1]; else birth_rules[1] = !birth_rules[1];}
+    if(IsKeyPressed(KEY_TWO)){if(shift) survive_rules[2] = !survive_rules[2]; else birth_rules[2] = !birth_rules[2];}
+    if(IsKeyPressed(KEY_THREE)){if(shift) survive_rules[3] = !survive_rules[3]; else birth_rules[3] = !birth_rules[3];}
+    if(IsKeyPressed(KEY_FOUR)){if(shift) survive_rules[4] = !survive_rules[4]; else birth_rules[4] = !birth_rules[4];}
+    if(IsKeyPressed(KEY_FIVE)){if(shift) survive_rules[5] = !survive_rules[5]; else birth_rules[5] = !birth_rules[5];}
+    if(IsKeyPressed(KEY_SIX)){if(shift) survive_rules[6] = !survive_rules[6]; else birth_rules[6] = !birth_rules[6];}
+    if(IsKeyPressed(KEY_SEVEN)){if(shift) survive_rules[7] = !survive_rules[7]; else birth_rules[7] = !birth_rules[7];}
+    if(IsKeyPressed(KEY_EIGHT)){if(shift) survive_rules[8] = !survive_rules[8]; else birth_rules[8] = !birth_rules[8];}
 
     if(IsKeyPressed(KEY_V) && dens < 9)
     {
@@ -150,6 +150,7 @@ void movement()
     if(IsKeyPressed(KEY_C) && dens > 1)
     {
         dens--;
+    }
     }
 
 }
