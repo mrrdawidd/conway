@@ -14,6 +14,7 @@ uint8_t survive_rules[9];
 uint8_t paused = 1;
 int speed = 1;
 int dens = 5;
+int brush = 0;
 
 Camera2D camera = {0};
 RenderTexture2D canvas;
@@ -130,6 +131,43 @@ void controls()
     if(IsKeyPressed(KEY_SIX))   {if(shift) survive_rules[6] = !survive_rules[6]; else birth_rules[6] = !birth_rules[6];}
     if(IsKeyPressed(KEY_SEVEN)) {if(shift) survive_rules[7] = !survive_rules[7]; else birth_rules[7] = !birth_rules[7];}
     if(IsKeyPressed(KEY_EIGHT)) {if(shift) survive_rules[8] = !survive_rules[8]; else birth_rules[8] = !birth_rules[8];}
+
+    Vector2 mPos = GetScreenToWorld2D(GetMousePosition(), camera);
+
+    if(mPos.x >= 0 && mPos.x < GS && mPos.y >= 0 && mPos.y < GS)
+    {
+        if (IsKeyPressed(KEY_Q) && brush > 0) brush--;
+        if (IsKeyPressed(KEY_E) && brush < 4) brush++;
+        if(IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+        {
+        for (int i = -brush; i <= brush; i++)
+        {
+            for (int j = -brush; j <= brush; j++)
+            {
+                int x = (int)mPos.x + i;
+                int y = (int)mPos.y + j;
+
+                if (x >= 0 && x < GS && y >= 0 && y < GS)
+                {
+                    if (shift) current[x][y] = 0;
+                    else current[x][y] = 1;
+                }
+            }
+        }
+        draw();
+        }
+    }
+    
+    if(IsKeyPressed(KEY_F))
+    {
+        for(int i = 0; i < GS; i++)
+        {
+            for(int j = 0; j < GS; j++)
+            {
+                current[i][j] = 0;
+            }
+        }
+    }
 }
 
 int main()
@@ -138,7 +176,6 @@ int main()
     InitWindow(1280, 720, "Life");
 
     camera.target = (Vector2){GS/2, GS/2};
-    camera.offset = (Vector2){GetScreenWidth()/2, GetScreenHeight()/2};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
@@ -162,6 +199,7 @@ int main()
 
     while(!WindowShouldClose())
     {
+        camera.offset = (Vector2){GetScreenWidth()/2, GetScreenHeight()/2};
         controls();
         frame++;
 
@@ -175,7 +213,9 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
         BeginMode2D(camera);
-        DrawTexture(canvas.texture, 0, 0, WHITE);
+
+        DrawTextureRec(canvas.texture, (Rectangle){ 0, 0, (float)canvas.texture.width, (float)-canvas.texture.height }, (Vector2){ 0, 0 }, WHITE);
+
         EndMode2D();
         DrawFPS(0, 0);
 
@@ -206,6 +246,7 @@ int main()
         DrawText(TextFormat("B: %s/S: %s", birth, survive), 0, 20, 20, BLUE);
         DrawText(TextFormat("Speed: %d", 64 / speed), 0, 40, 20, RED);
         DrawText(TextFormat("Density: %d", dens), 0, 60, 20, ORANGE);
+        DrawText(TextFormat("Brush Size: %d", brush+1), 0, 80, 20, PINK);
 
         EndDrawing();
     }
