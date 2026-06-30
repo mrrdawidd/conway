@@ -13,11 +13,10 @@ uint8_t survive_rules[9];
 
 uint8_t paused = 1;
 int speed = 1;
+int dens = 5;
 
 Camera2D camera = {0};
 RenderTexture2D canvas;
-
-int dens = 5;
 
 void init()
 {
@@ -25,8 +24,8 @@ void init()
     {
         for(int j = 0; j < GS; j++)
         {
-            int rsg = GetRandomValue(1, 10);
-            if(rsg >= dens) current[i][j] = 0;
+            int rsg = GetRandomValue(1, 11);
+            if(rsg > dens) current[i][j] = 0;
             else current[i][j] = 1;
         }
     }
@@ -87,7 +86,7 @@ void draw()
     EndTextureMode();
 }
 
-void movement()
+void controls()
 {
     Vector2 mouseDelta = GetMouseDelta();
     if(IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) 
@@ -103,7 +102,7 @@ void movement()
     {
         camera.zoom += 0.5f * scroll * camera.zoom;
     }
-    
+
     camera.zoom = clamp(camera.zoom, 1.0f, 10.0f);
 
     if(IsKeyPressed(KEY_SPACE))
@@ -114,8 +113,23 @@ void movement()
 
     if(IsKeyPressed(KEY_R)) init();
 
-    if(IsKeyPressed(KEY_X) && speed < 81) speed *= 3;
-    if(IsKeyPressed(KEY_Z) && speed > 1) speed /= 3;
+    if(IsKeyPressed(KEY_Z) && speed < 64) speed *= 2;
+    if(IsKeyPressed(KEY_X) && speed > 1) speed /= 2;
+
+    if(IsKeyPressed(KEY_C) && dens > 1) dens--;
+    if(IsKeyPressed(KEY_V) && dens < 10) dens++;
+
+    int shift = IsKeyDown(KEY_LEFT_SHIFT);
+
+    if(IsKeyPressed(KEY_ZERO))  {if(shift) survive_rules[0] = !survive_rules[0]; else birth_rules[0] = !birth_rules[0];}
+    if(IsKeyPressed(KEY_ONE))   {if(shift) survive_rules[1] = !survive_rules[1]; else birth_rules[1] = !birth_rules[1];}
+    if(IsKeyPressed(KEY_TWO))   {if(shift) survive_rules[2] = !survive_rules[2]; else birth_rules[2] = !birth_rules[2];}
+    if(IsKeyPressed(KEY_THREE)) {if(shift) survive_rules[3] = !survive_rules[3]; else birth_rules[3] = !birth_rules[3];}
+    if(IsKeyPressed(KEY_FOUR))  {if(shift) survive_rules[4] = !survive_rules[4]; else birth_rules[4] = !birth_rules[4];}
+    if(IsKeyPressed(KEY_FIVE))  {if(shift) survive_rules[5] = !survive_rules[5]; else birth_rules[5] = !birth_rules[5];}
+    if(IsKeyPressed(KEY_SIX))   {if(shift) survive_rules[6] = !survive_rules[6]; else birth_rules[6] = !birth_rules[6];}
+    if(IsKeyPressed(KEY_SEVEN)) {if(shift) survive_rules[7] = !survive_rules[7]; else birth_rules[7] = !birth_rules[7];}
+    if(IsKeyPressed(KEY_EIGHT)) {if(shift) survive_rules[8] = !survive_rules[8]; else birth_rules[8] = !birth_rules[8];}
 }
 
 int main()
@@ -123,7 +137,7 @@ int main()
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_MAXIMIZED);
     InitWindow(1280, 720, "Life");
 
-    camera.target = (Vector2){GetScreenWidth()/2, GetScreenHeight()/2};
+    camera.target = (Vector2){GS/2, GS/2};
     camera.offset = (Vector2){GetScreenWidth()/2, GetScreenHeight()/2};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
@@ -148,7 +162,7 @@ int main()
 
     while(!WindowShouldClose())
     {
-        movement();
+        controls();
         frame++;
 
         if(paused == 0 && frame >= speed)
@@ -164,6 +178,35 @@ int main()
         DrawTexture(canvas.texture, 0, 0, WHITE);
         EndMode2D();
         DrawFPS(0, 0);
+
+        char birth[10] = "";
+        int b = 0;
+        for(int i = 0; i <= 8; i++)
+        {
+            if(birth_rules[i])
+            {
+                birth[b] = '0' + i;
+                b++;
+            }
+        }
+        birth[b] = '\0';
+
+        char survive[10] = "";
+        int s = 0;
+        for(int i = 0; i <= 8; i++)
+        {
+            if(survive_rules[i])
+            {
+                survive[s] = '0' + i;
+                s++;
+            }
+        }
+        survive[s] = '\0';
+
+        DrawText(TextFormat("B: %s/S: %s", birth, survive), 0, 20, 20, BLUE);
+        DrawText(TextFormat("Speed: %d", 64 / speed), 0, 40, 20, RED);
+        DrawText(TextFormat("Density: %d", dens), 0, 60, 20, ORANGE);
+
         EndDrawing();
     }
 
